@@ -1,33 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { createBook, reset } from '../features/books/bookSlice';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { createBook } from '../features/books/bookSlice';
 import Spinner from '../components/Spinner';
 
 function NewBook() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const { isLoading, isError, isSuccess, message } = useSelector(
-    (state) => state.books
-  );
-
-  useEffect(() => {
-    if (isError) {
-      console.error(message);
-    }
-
-    if (isSuccess) {
-      dispatch(reset());
-      navigate('/books');
-    }
-
-    return () => {
-      dispatch(reset());
-    };
-  }, [dispatch, isError, isSuccess, message, navigate]);
+  const { isLoading } = useSelector((state) => state.books);
+  const [message, setMessage] = useState('');
 
   const initialValues = {
     title: '',
@@ -35,9 +18,11 @@ function NewBook() {
     isbn: '',
     publicationYear: '',
     genre: '',
+    subgenre: '',
     description: '',
     totalCopies: 1,
-    coverImage: '',
+    price: 0,
+    coverImage: ''
   };
 
   const validationSchema = Yup.object({
@@ -50,15 +35,29 @@ function NewBook() {
       .min(1000, 'Must be a valid year')
       .max(new Date().getFullYear(), 'Cannot be in the future'),
     genre: Yup.string().required('Genre is required'),
+    subgenre: Yup.string(),
     description: Yup.string().required('Description is required'),
     totalCopies: Yup.number()
       .required('Total copies is required')
       .integer('Must be a whole number')
-      .min(1, 'Must have at least one copy'),
+      .min(1, 'Must be at least 1'),
+    price: Yup.number()
+      .required('Price is required')
+      .min(0, 'Price cannot be negative'),
+    coverImage: Yup.string().url('Must be a valid URL').nullable()
   });
 
-  const onSubmit = (values) => {
-    dispatch(createBook(values));
+  const onSubmit = async (values, { resetForm }) => {
+    try {
+      await dispatch(createBook(values)).unwrap();
+      resetForm();
+      setMessage('Book added successfully!');
+      setTimeout(() => {
+        navigate('/books');
+      }, 2000);
+    } catch (error) {
+      setMessage('Failed to add book: ' + error.message);
+    }
   };
 
   if (isLoading) {
@@ -66,20 +65,20 @@ function NewBook() {
   }
 
   return (
-    <div className="page-container">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="md:grid md:grid-cols-3 md:gap-6">
-          <div className="md:col-span-1">
-            <div className="px-4 sm:px-0">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">
-                Add New Book
-              </h3>
-              <p className="mt-1 text-sm text-gray-600">
-                Fill in the details to add a new book to the library.
-              </p>
-            </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold leading-tight text-gray-900 mb-8">
+          Add New Book
+        </h1>
+
+        {message && (
+          <div className={`mb-4 p-4 rounded-md ${message.includes('success') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+            {message}
           </div>
-          <div className="mt-5 md:mt-0 md:col-span-2">
+        )}
+
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
             <Formik
               initialValues={initialValues}
               validationSchema={validationSchema}
@@ -189,6 +188,42 @@ function NewBook() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label
+                      htmlFor="subgenre"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Subgenre
+                    </label>
+                    <Field
+                      type="text"
+                      name="subgenre"
+                      id="subgenre"
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="col-span-6">
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Description
+                    </label>
+                    <Field
+                      as="textarea"
+                      name="description"
+                      id="description"
+                      rows={4}
+                      className="form-textarea"
+                    />
+                    <ErrorMessage
+                      name="description"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
                       htmlFor="totalCopies"
                       className="block text-sm font-medium text-gray-700"
                     >
@@ -207,12 +242,33 @@ function NewBook() {
                     />
                   </div>
 
-                  <div className="col-span-6">
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="price"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Price ($)
+                    </label>
+                    <Field
+                      type="number"
+                      name="price"
+                      id="price"
+                      step="0.01"
+                      className="form-input"
+                    />
+                    <ErrorMessage
+                      name="price"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
                     <label
                       htmlFor="coverImage"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Cover Image URL (optional)
+                      Cover Image URL
                     </label>
                     <Field
                       type="text"
@@ -226,52 +282,21 @@ function NewBook() {
                       className="text-red-500 text-sm mt-1"
                     />
                   </div>
-
-                  <div className="col-span-6">
-                    <label
-                      htmlFor="description"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Description
-                    </label>
-                    <Field
-                      as="textarea"
-                      name="description"
-                      id="description"
-                      rows={4}
-                      className="form-input"
-                    />
-                    <ErrorMessage
-                      name="description"
-                      component="div"
-                      className="text-red-500 text-sm mt-1"
-                    />
-                  </div>
                 </div>
-
-                {isError && (
-                  <div className="bg-red-50 border-l-4 border-red-400 p-4">
-                    <div className="flex">
-                      <div className="ml-3">
-                        <p className="text-sm text-red-700">{message}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    className="mr-3 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     onClick={() => navigate('/books')}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="bg-primary-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                   >
-                    Save
+                    Add Book
                   </button>
                 </div>
               </Form>

@@ -33,15 +33,27 @@ const BorrowSchema = new mongoose.Schema({
   }
 });
 
-// Calculate fine when retrieving a borrow record
+// Populate user and book when retrieving borrow records
 BorrowSchema.pre('find', function() {
-  this.populate('user', 'name email');
-  this.populate('book', 'title author isbn coverImage');
+  this.populate({
+    path: 'user',
+    select: 'name email'
+  });
+  this.populate({
+    path: 'book',
+    select: 'title author isbn genre subgenre coverImage availableCopies totalCopies'
+  });
 });
 
 BorrowSchema.pre('findOne', function() {
-  this.populate('user', 'name email');
-  this.populate('book', 'title author isbn coverImage');
+  this.populate({
+    path: 'user',
+    select: 'name email'
+  });
+  this.populate({
+    path: 'book',
+    select: 'title author isbn genre subgenre coverImage availableCopies totalCopies'
+  });
 });
 
 module.exports = mongoose.model('Borrow', BorrowSchema); 

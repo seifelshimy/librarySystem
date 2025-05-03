@@ -26,6 +26,10 @@ const BookSchema = new mongoose.Schema({
     required: [true, 'Please add a genre'],
     trim: true
   },
+  subgenre: {
+    type: String,
+    trim: true
+  },
   description: {
     type: String,
     required: [true, 'Please add a description']
@@ -41,6 +45,11 @@ const BookSchema = new mongoose.Schema({
     default: function() {
       return this.totalCopies;
     }
+  },
+  price: {
+    type: Number,
+    required: [true, 'Please add a price for the book'],
+    default: 0
   },
   coverImage: {
     type: String,

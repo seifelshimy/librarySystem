@@ -27,6 +27,7 @@ function Header() {
   const navigation = [
     { name: 'Home', href: '/', current: false },
     { name: 'Books', href: '/books', current: false },
+    { name: 'Contact Us', href: '/contact', current: false },
   ];
 
   // Add borrows link if user is authenticated and not admin/librarian

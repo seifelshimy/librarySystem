@@ -19,6 +19,7 @@ const books = [
     description: 'A novel of American Dreams, love, and the Jazz Age. The story is of the young and mysterious millionaire Jay Gatsby and his passion for the beautiful Daisy Buchanan.',
     totalCopies: 10,
     availableCopies: 10,
+    price: 12.99,
     coverImage: 'https://images-na.ssl-images-amazon.com/images/I/71FTb9X6wsL.jpg'
   },
   {
@@ -30,6 +31,7 @@ const books = [
     description: 'The unforgettable novel of a childhood in a sleepy Southern town and the crisis of conscience that rocked it. It became both an instant bestseller and a critical success when it was first published and has since been translated into more than forty languages.',
     totalCopies: 8,
     availableCopies: 8,
+    price: 14.99,
     coverImage: 'https://images-na.ssl-images-amazon.com/images/I/71FxgtFKcQL.jpg'
   },
   {
@@ -41,6 +43,7 @@ const books = [
     description: 'The story takes place in an imagined future, the year 1984, when much of the world has fallen victim to perpetual war, omnipresent government surveillance, historical negationism and propaganda.',
     totalCopies: 12,
     availableCopies: 12,
+    price: 11.99,
     coverImage: 'https://images-na.ssl-images-amazon.com/images/I/71kxa1-0mfL.jpg'
   },
   {
@@ -52,6 +55,7 @@ const books = [
     description: 'The first novel in the Harry Potter series. The story follows Harry Potter, a young wizard who discovers his magical heritage on his eleventh birthday, when he receives a letter of acceptance to Hogwarts School of Witchcraft and Wizardry.',
     totalCopies: 15,
     availableCopies: 15,
+    price: 15.99,
     coverImage: 'https://images-na.ssl-images-amazon.com/images/I/81iqZ2HHD-L.jpg'
   },
   {
@@ -63,6 +67,7 @@ const books = [
     description: 'Written for J.R.R. Tolkien\'s own children, The Hobbit met with instant critical acclaim when it was first published in 1937. The adventure follows the journey of Bilbo Baggins, who had no desire to leave his comfortable hobbit hole.',
     totalCopies: 10,
     availableCopies: 10,
+    price: 13.99,
     coverImage: 'https://images-na.ssl-images-amazon.com/images/I/710+HcoP38L.jpg'
   },
   {
@@ -74,6 +79,7 @@ const books = [
     description: 'Pride and Prejudice is a romantic novel of manners written by Jane Austen in 1813. The novel follows the character development of Elizabeth Bennet, the dynamic protagonist of the book who learns about the repercussions of hasty judgments.',
     totalCopies: 7,
     availableCopies: 7,
+    price: 10.99,
     coverImage: 'https://images-na.ssl-images-amazon.com/images/I/71Q1tPupKjL.jpg'
   },
   {
@@ -85,6 +91,7 @@ const books = [
     description: 'The novel details two days in the life of 16-year-old Holden Caulfield after he has been expelled from prep school. Confused and disillusioned, Holden searches for truth and rails against the "phoniness" of the adult world.',
     totalCopies: 9,
     availableCopies: 9,
+    price: 12.99,
     coverImage: 'https://images-na.ssl-images-amazon.com/images/I/81OthjkJBuL.jpg'
   },
   {
@@ -96,7 +103,8 @@ const books = [
     description: 'Largely set in a futuristic World State, inhabited by genetically modified citizens and an intelligence-based social hierarchy, the novel anticipates huge scientific advancements in reproductive technology, sleep-learning, psychological manipulation and classical conditioning.',
     totalCopies: 11,
     availableCopies: 11,
-    coverImage: 'https://images-na.ssl-images-amazon.com/images/I/81U1UfBPppL.jpg'
+    price: 11.99,
+    coverImage: 'https://diwanegypt.com/wp-content/uploads/2020/08/9780099477464.jpg'
   }
 ];
 
@@ -105,7 +113,7 @@ const importData = async () => {
   try {
     await Book.deleteMany();
     console.log('Books cleared from database...');
-    
+
     await Book.insertMany(books);
     console.log('Sample books data imported successfully!');
     process.exit();
@@ -116,4 +124,4 @@ const importData = async () => {
 };
 
 // Run the import function
-importData(); 
+importData();

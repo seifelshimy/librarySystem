@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getBook, updateBook, reset } from '../features/books/bookSlice';
@@ -14,6 +14,20 @@ function EditBook() {
   const { book, isLoading, isError, isSuccess, message } = useSelector(
     (state) => state.books
   );
+
+  const [initialValues, setInitialValues] = useState({
+    title: '',
+    author: '',
+    isbn: '',
+    publicationYear: '',
+    genre: '',
+    subgenre: '',
+    description: '',
+    totalCopies: 1,
+    availableCopies: 1,
+    price: 0,
+    coverImage: ''
+  });
 
   useEffect(() => {
     dispatch(getBook(id));
@@ -34,6 +48,24 @@ function EditBook() {
     };
   }, [dispatch, isError, isSuccess, message, navigate, id]);
 
+  useEffect(() => {
+    if (book) {
+      setInitialValues({
+        title: book.title,
+        author: book.author,
+        isbn: book.isbn,
+        publicationYear: book.publicationYear,
+        genre: book.genre,
+        subgenre: book.subgenre || '',
+        description: book.description,
+        totalCopies: book.totalCopies,
+        availableCopies: book.availableCopies,
+        price: book.price || 0,
+        coverImage: book.coverImage === 'no-image.jpg' ? '' : book.coverImage
+      });
+    }
+  }, [book]);
+
   const validationSchema = Yup.object({
     title: Yup.string().required('Title is required'),
     author: Yup.string().required('Author is required'),
@@ -44,11 +76,24 @@ function EditBook() {
       .min(1000, 'Must be a valid year')
       .max(new Date().getFullYear(), 'Cannot be in the future'),
     genre: Yup.string().required('Genre is required'),
+    subgenre: Yup.string(),
     description: Yup.string().required('Description is required'),
     totalCopies: Yup.number()
       .required('Total copies is required')
       .integer('Must be a whole number')
-      .min(1, 'Must have at least one copy'),
+      .min(1, 'Must be at least 1'),
+    availableCopies: Yup.number()
+      .required('Available copies is required')
+      .integer('Must be a whole number')
+      .min(0, 'Cannot be negative')
+      .max(
+        Yup.ref('totalCopies'),
+        'Cannot be more than total copies'
+      ),
+    price: Yup.number()
+      .required('Price is required')
+      .min(0, 'Price cannot be negative'),
+    coverImage: Yup.string().url('Must be a valid URL').nullable()
   });
 
   const onSubmit = (values) => {
@@ -58,17 +103,6 @@ function EditBook() {
   if (isLoading || !book) {
     return <Spinner />;
   }
-
-  const initialValues = {
-    title: book.title,
-    author: book.author,
-    isbn: book.isbn,
-    publicationYear: book.publicationYear,
-    genre: book.genre,
-    description: book.description,
-    totalCopies: book.totalCopies,
-    coverImage: book.coverImage === 'no-image.jpg' ? '' : book.coverImage,
-  };
 
   return (
     <div className="page-container">
@@ -195,6 +229,21 @@ function EditBook() {
 
                   <div className="col-span-6 sm:col-span-3">
                     <label
+                      htmlFor="subgenre"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Subgenre
+                    </label>
+                    <Field
+                      type="text"
+                      name="subgenre"
+                      id="subgenre"
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
                       htmlFor="totalCopies"
                       className="block text-sm font-medium text-gray-700"
                     >
@@ -208,6 +257,47 @@ function EditBook() {
                     />
                     <ErrorMessage
                       name="totalCopies"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="availableCopies"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Available Copies
+                    </label>
+                    <Field
+                      type="number"
+                      name="availableCopies"
+                      id="availableCopies"
+                      className="form-input"
+                    />
+                    <ErrorMessage
+                      name="availableCopies"
+                      component="div"
+                      className="text-red-500 text-sm mt-1"
+                    />
+                  </div>
+
+                  <div className="col-span-6 sm:col-span-3">
+                    <label
+                      htmlFor="price"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Price ($)
+                    </label>
+                    <Field
+                      type="number"
+                      name="price"
+                      id="price"
+                      step="0.01"
+                      className="form-input"
+                    />
+                    <ErrorMessage
+                      name="price"
                       component="div"
                       className="text-red-500 text-sm mt-1"
                     />

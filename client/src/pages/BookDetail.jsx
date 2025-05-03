@@ -121,15 +121,28 @@ function BookDetail() {
                   <div className="mt-1">
                     <p className="text-sm text-gray-500">ISBN: {book.isbn}</p>
                   </div>
+                  <div className="mt-2">
+                    <p className="text-sm font-medium text-gray-900">
+                      Price: ${book.price ? book.price.toFixed(2) : '0.00'}
+                    </p>
+                  </div>
 
-                  {user && book.availableCopies > 0 && (
-                    <div className="mt-4">
-                      <Link
-                        to={`/borrows/new?bookId=${book._id}`}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  {user && (
+                    <div className="mt-4 space-y-2">
+                      {book.availableCopies > 0 && (
+                        <Link
+                          to={`/borrows/new?bookId=${book._id}`}
+                          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        >
+                          Borrow this Book
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => window.alert(`You're about to buy "${book.title}" for $${book.price ? book.price.toFixed(2) : '0.00'}. This feature is coming soon!`)}
+                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                       >
-                        Borrow this Book
-                      </Link>
+                        Buy this Book
+                      </button>
                     </div>
                   )}
                 </div>
@@ -143,6 +156,18 @@ function BookDetail() {
                   <div className="mt-4 text-gray-600">
                     <p>{book.description}</p>
                   </div>
+                </div>
+
+                <div className="py-4 sm:grid sm:py-5 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-medium text-gray-500">Genre</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {book.genre}
+                    {book.subgenre && (
+                      <span className="ml-2 text-gray-600 text-xs">
+                        ({book.subgenre})
+                      </span>
+                    )}
+                  </dd>
                 </div>
               </div>
             </div>

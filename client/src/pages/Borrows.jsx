@@ -63,7 +63,7 @@ function Borrows() {
           </p>
         </div>
 
-        {borrows.length === 0 ? (
+        {!borrows || borrows.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="mt-2 text-lg font-medium text-gray-900">
               No borrowed books
@@ -126,28 +126,38 @@ function Borrows() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
-                                <img
-                                  className="h-10 w-10 rounded-full"
-                                  src={
-                                    borrow.book.coverImage === 'no-image.jpg'
-                                      ? 'https://via.placeholder.com/40'
-                                      : borrow.book.coverImage
-                                  }
-                                  alt={borrow.book.title}
-                                />
+                                {borrow.book && (
+                                  <img
+                                    className="h-10 w-10 rounded-full"
+                                    src={
+                                      !borrow.book.coverImage || borrow.book.coverImage === 'no-image.jpg'
+                                        ? 'https://via.placeholder.com/40'
+                                        : borrow.book.coverImage
+                                    }
+                                    alt={borrow.book ? borrow.book.title : 'Book Cover'}
+                                  />
+                                )}
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
-                                  <Link
-                                    to={`/books/${borrow.book._id}`}
-                                    className="hover:text-primary-600"
-                                  >
-                                    {borrow.book.title}
-                                  </Link>
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {borrow.book.author}
-                                </div>
+                                {borrow.book ? (
+                                  <>
+                                    <div className="text-sm font-medium text-gray-900">
+                                      <Link
+                                        to={`/books/${borrow.book._id}`}
+                                        className="hover:text-primary-600"
+                                      >
+                                        {borrow.book.title}
+                                      </Link>
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      {borrow.book.author}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="text-sm text-gray-500">
+                                    Book data unavailable
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>

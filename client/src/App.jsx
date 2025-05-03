@@ -15,6 +15,7 @@ import AdminBorrows from './pages/AdminBorrows';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
+import ContactUs from './pages/ContactUs';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 import './index.css';
@@ -32,6 +33,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/books" element={<Books />} />
               <Route path="/books/:id" element={<BookDetail />} />
+              <Route path="/contact" element={<ContactUs />} />
               
               {/* Protected routes for authenticated users */}
               <Route element={<PrivateRoute />}>

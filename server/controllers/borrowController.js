@@ -107,9 +107,12 @@ exports.createBorrow = async (req, res) => {
       availableCopies: book.availableCopies - 1
     });
 
+    // Get borrow with populated book and user
+    const populatedBorrow = await Borrow.findById(borrow._id);
+
     res.status(201).json({
       success: true,
-      data: borrow
+      data: populatedBorrow
     });
   } catch (error) {
     res.status(500).json({

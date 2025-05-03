@@ -127,6 +127,7 @@ export const borrowSlice = createSlice({
         state.isLoading = false;
         state.isSuccess = true;
         state.borrows.push(action.payload.data);
+        state.message = 'Book borrowed successfully';
       })
       .addCase(createBorrow.rejected, (state, action) => {
         state.isLoading = false;
