@@ -4,7 +4,8 @@ const {
   getBorrow,
   createBorrow,
   returnBook,
-  deleteBorrow
+  deleteBorrow,
+  createTestBorrow
 } = require('../controllers/borrowController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -21,5 +22,8 @@ router.get('/:id', getBorrow);
 // Admin/librarian routes
 router.put('/:id', authorize('admin', 'librarian'), returnBook);
 router.delete('/:id', authorize('admin'), deleteBorrow);
+
+// Test route - admin only
+router.post('/test/create', authorize('admin'), createTestBorrow);
 
 module.exports = router; 

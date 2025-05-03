@@ -1,21 +1,36 @@
 const Borrow = require('../models/Borrow');
 const Book = require('../models/Book');
+const mongoose = require('mongoose');
 
 // @desc    Get all borrows
 // @route   GET /api/borrows
 // @access  Private (Admin or Librarian)
 exports.getBorrows = async (req, res) => {
   try {
+    console.log('getBorrows controller called by user:', req.user.id, 'role:', req.user.role);
+    
     let query;
     
     // If user is not admin, only show their borrows
     if (req.user.role !== 'admin' && req.user.role !== 'librarian') {
+      console.log('Getting borrows for regular user:', req.user.id);
       query = Borrow.find({ user: req.user.id });
     } else {
+      console.log('Getting all borrows for admin/librarian');
       query = Borrow.find();
     }
     
     const borrows = await query;
+    console.log(`Found ${borrows.length} borrows`);
+
+    // Check for any borrows with missing references
+    const borrowsWithMissingRefs = borrows.filter(
+      borrow => !borrow.book || !borrow.user
+    );
+    
+    if (borrowsWithMissingRefs.length > 0) {
+      console.log(`Warning: ${borrowsWithMissingRefs.length} borrows have missing book or user references`);
+    }
 
     res.status(200).json({
       success: true,
@@ -23,6 +38,7 @@ exports.getBorrows = async (req, res) => {
       data: borrows
     });
   } catch (error) {
+    console.error('Error in getBorrows controller:', error);
     res.status(500).json({
       success: false,
       message: error.message
@@ -73,6 +89,14 @@ exports.getBorrow = async (req, res) => {
 // @access  Private
 exports.createBorrow = async (req, res) => {
   try {
+    // Validate request body
+    if (!req.body.book) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a book ID'
+      });
+    }
+
     // Add user to req.body
     req.body.user = req.user.id;
 
@@ -91,6 +115,20 @@ exports.createBorrow = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Book not available for borrowing'
+      });
+    }
+
+    // Check if user already has an active loan for this book
+    const existingBorrow = await Borrow.findOne({
+      user: req.user.id,
+      book: req.body.book,
+      status: { $ne: 'returned' }
+    });
+
+    if (existingBorrow) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have an active loan for this book'
       });
     }
 
@@ -173,10 +211,17 @@ exports.returnBook = async (req, res) => {
 
     // Update book available copies
     const book = await Book.findById(borrow.book);
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: 'Book not found'
+      });
+    }
+    
     await Book.findByIdAndUpdate(borrow.book, {
       availableCopies: book.availableCopies + 1
     });
-
+    
     res.status(200).json({
       success: true,
       data: borrow
@@ -210,6 +255,63 @@ exports.deleteBorrow = async (req, res) => {
       data: {}
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Test endpoint to create sample borrows
+// @route   POST /api/borrows/test
+// @access  Private (Admin)
+exports.createTestBorrow = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admin can use this test endpoint'
+      });
+    }
+
+    // Find a book
+    const book = await Book.findOne();
+    
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: 'No books found to create test borrow'
+      });
+    }
+
+    // Calculate due date (14 days from now)
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 14);
+
+    // Create a test borrow
+    const borrow = await Borrow.create({
+      user: req.user.id,
+      book: book._id,
+      borrowDate: new Date(),
+      dueDate: dueDate,
+      status: 'borrowed'
+    });
+
+    // Update book available copies
+    await Book.findByIdAndUpdate(book._id, {
+      availableCopies: Math.max(0, book.availableCopies - 1)
+    });
+
+    // Get fully populated borrow
+    const populatedBorrow = await Borrow.findById(borrow._id);
+
+    res.status(201).json({
+      success: true,
+      message: 'Test borrow created successfully',
+      data: populatedBorrow
+    });
+  } catch (error) {
+    console.error('Error creating test borrow:', error);
     res.status(500).json({
       success: false,
       message: error.message

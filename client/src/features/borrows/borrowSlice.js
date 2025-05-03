@@ -15,9 +15,20 @@ export const getBorrows = createAsyncThunk(
   'borrows/getAll',
   async (_, thunkAPI) => {
     try {
-      const token = thunkAPI.getState().auth.user.token;
-      return await borrowService.getBorrows(token);
+      console.log('getBorrows thunk starting');
+      const state = thunkAPI.getState();
+      const token = state.auth.user?.token;
+      
+      if (!token) {
+        console.error('No token available for getBorrows');
+        return thunkAPI.rejectWithValue('Authentication required');
+      }
+      
+      const response = await borrowService.getBorrows(token);
+      console.log('getBorrows thunk response:', response);
+      return response;
     } catch (error) {
+      console.error('getBorrows thunk error:', error);
       const message =
         (error.response &&
           error.response.data &&
@@ -96,19 +107,27 @@ export const borrowSlice = createSlice({
     builder
       .addCase(getBorrows.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+        state.message = '';
       })
       .addCase(getBorrows.fulfilled, (state, action) => {
+        console.log('getBorrows.fulfilled payload:', action.payload);
         state.isLoading = false;
         state.isSuccess = true;
-        state.borrows = action.payload.data;
+        state.borrows = action.payload.data || [];
       })
       .addCase(getBorrows.rejected, (state, action) => {
+        console.error('getBorrows.rejected payload:', action.payload);
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
+        // Don't reset borrows to an empty array on error
       })
       .addCase(getBorrow.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
       })
       .addCase(getBorrow.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -122,11 +141,15 @@ export const borrowSlice = createSlice({
       })
       .addCase(createBorrow.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
       })
       .addCase(createBorrow.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.borrows.push(action.payload.data);
+        if (action.payload.data) {
+          state.borrows.push(action.payload.data);
+        }
         state.message = 'Book borrowed successfully';
       })
       .addCase(createBorrow.rejected, (state, action) => {
@@ -136,13 +159,17 @@ export const borrowSlice = createSlice({
       })
       .addCase(returnBook.pending, (state) => {
         state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
       })
       .addCase(returnBook.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.borrows = state.borrows.map((borrow) =>
-          borrow._id === action.payload.data._id ? action.payload.data : borrow
-        );
+        if (action.payload.data && state.borrows.length > 0) {
+          state.borrows = state.borrows.map((borrow) =>
+            borrow._id === action.payload.data._id ? action.payload.data : borrow
+          );
+        }
       })
       .addCase(returnBook.rejected, (state, action) => {
         state.isLoading = false;

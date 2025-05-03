@@ -170,6 +170,20 @@ exports.deleteBook = async (req, res) => {
       });
     }
 
+    // Check if book has active borrows
+    const Borrow = require('../models/Borrow');
+    const activeLoans = await Borrow.find({
+      book: req.params.id,
+      status: { $ne: 'returned' }
+    });
+
+    if (activeLoans.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete book with active loans. Please return all copies first.'
+      });
+    }
+
     await book.deleteOne();
 
     res.status(200).json({
