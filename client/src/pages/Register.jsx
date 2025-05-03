@@ -33,7 +33,8 @@ function Register() {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'user'
   };
 
   const validationSchema = Yup.object({
@@ -46,7 +47,8 @@ function Register() {
       .required('Password is required'),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref('password'), null], 'Passwords must match')
-      .required('Confirm password is required')
+      .required('Confirm password is required'),
+    role: Yup.string().required('Role is required')
   });
 
   const onSubmit = (values) => {
@@ -56,7 +58,8 @@ function Register() {
       const userData = {
         name: values.name,
         email: values.email,
-        password: values.password
+        password: values.password,
+        role: values.role
       };
 
       dispatch(register(userData));
@@ -127,6 +130,35 @@ function Register() {
                     className="text-red-500 text-sm mt-1"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Account Type
+                </label>
+                <div className="mt-1">
+                  <Field
+                    as="select"
+                    id="role"
+                    name="role"
+                    className="form-input"
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="librarian">Librarian</option>
+                  </Field>
+                  <ErrorMessage
+                    name="role"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  Select "Admin" if you're an administrator, "Librarian" if you're a librarian, or "User" for regular library access.
+                </p>
               </div>
 
               <div>

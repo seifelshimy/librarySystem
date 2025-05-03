@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getBorrows, reset, returnBook } from '../features/borrows/borrowSlice';
+import { getBorrows, reset } from '../features/borrows/borrowSlice';
 import Spinner from '../components/Spinner';
 import { Link } from 'react-router-dom';
 
@@ -41,13 +41,6 @@ function Borrows() {
       return `${diffDays} days remaining`;
     } else {
       return `${Math.abs(diffDays)} days overdue`;
-    }
-  };
-
-  // Handle return book
-  const handleReturnBook = (borrowId) => {
-    if (window.confirm('Are you sure you want to return this book?')) {
-      dispatch(returnBook(borrowId));
     }
   };
 
@@ -125,12 +118,6 @@ function Borrows() {
                         >
                           Fine
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Actions
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -205,16 +192,6 @@ function Borrows() {
                             {borrow.fine > 0
                               ? `$${borrow.fine.toFixed(2)}`
                               : '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            {borrow.status !== 'returned' && (
-                              <button
-                                onClick={() => handleReturnBook(borrow._id)}
-                                className="text-green-600 hover:text-green-900 bg-green-100 hover:bg-green-200 px-3 py-1 rounded-md"
-                              >
-                                Return Book
-                              </button>
-                            )}
                           </td>
                         </tr>
                       ))}

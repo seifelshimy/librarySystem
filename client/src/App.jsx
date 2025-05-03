@@ -12,6 +12,7 @@ import EditBook from './pages/EditBook';
 import Borrows from './pages/Borrows';
 import NewBorrow from './pages/NewBorrow';
 import AdminBorrows from './pages/AdminBorrows';
+import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
 import PrivateRoute from './components/PrivateRoute';
@@ -41,6 +42,7 @@ function App() {
 
               {/* Protected routes for admins and librarians */}
               <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/books/new" element={<NewBook />} />
                 <Route path="/books/:id/edit" element={<EditBook />} />
                 <Route path="/admin/borrows" element={<AdminBorrows />} />

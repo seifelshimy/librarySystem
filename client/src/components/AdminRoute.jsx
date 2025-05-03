@@ -9,10 +9,14 @@ const AdminRoute = () => {
     return <Spinner />;
   }
 
-  // Check if user is admin or librarian
-  const authorized =
-    user &&
+  // Check if user exists and has admin or librarian role
+  const authorized = user && 
+    user.user && 
     (user.user.role === 'admin' || user.user.role === 'librarian');
+
+  if (!authorized) {
+    console.log('Access denied: User is not admin or librarian');
+  }
 
   return authorized ? <Outlet /> : <Navigate to="/" />;
 };

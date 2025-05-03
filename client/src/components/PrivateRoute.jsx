@@ -9,7 +9,14 @@ const PrivateRoute = () => {
     return <Spinner />;
   }
 
-  return user ? <Outlet /> : <Navigate to="/login" />;
+  // Check if user exists and has valid token
+  const isAuthenticated = user && user.user && user.token;
+
+  if (!isAuthenticated) {
+    console.log('Authentication required: Redirecting to login');
+  }
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
 };
 
 export default PrivateRoute; 

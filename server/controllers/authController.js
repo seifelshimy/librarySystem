@@ -122,6 +122,60 @@ exports.getMe = async (req, res) => {
   }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    
+    // Find the user
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Check if email is already taken if trying to change email
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already taken'
+        });
+      }
+    }
+    
+    // Update user fields
+    user.name = name || user.name;
+    user.email = email || user.email;
+    
+    // Save the user
+    const updatedUser = await user.save();
+    
+    res.json({
+      success: true,
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role
+      },
+      token: generateToken(updatedUser._id)
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // @desc    Logout user / clear cookie
 // @route   GET /api/users/logout
 // @access  Private

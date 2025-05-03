@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { updateProfile, reset } from '../features/auth/authSlice';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import Spinner from '../components/Spinner';
@@ -9,15 +10,19 @@ function Profile() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { user, isLoading } = useSelector((state) => state.auth);
-  const [message, setMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
+  const { user, isLoading, isError, isSuccess, message } = useSelector(
+    (state) => state.auth
+  );
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
     }
-  }, [user, navigate]);
+    
+    return () => {
+      dispatch(reset());
+    };
+  }, [user, navigate, dispatch]);
 
   const initialValues = {
     name: user?.user?.name || '',
@@ -32,15 +37,7 @@ function Profile() {
   });
 
   const onSubmit = (values) => {
-    // Profile update is a placeholder for now
-    // In a real app, you would dispatch an action to update the user profile
-    console.log('Profile update values:', values);
-    setIsSuccess(true);
-    setMessage('Profile updated successfully');
-    setTimeout(() => {
-      setIsSuccess(false);
-      setMessage('');
-    }, 3000);
+    dispatch(updateProfile(values));
   };
 
   if (isLoading) {
@@ -66,6 +63,7 @@ function Profile() {
               initialValues={initialValues}
               validationSchema={validationSchema}
               onSubmit={onSubmit}
+              enableReinitialize
             >
               <Form className="space-y-6 bg-white py-6 px-4 sm:p-6 shadow sm:rounded-md">
                 <div>
@@ -138,7 +136,17 @@ function Profile() {
                   <div className="bg-green-50 border-l-4 border-green-400 p-4">
                     <div className="flex">
                       <div className="ml-3">
-                        <p className="text-sm text-green-700">{message}</p>
+                        <p className="text-sm text-green-700">Profile updated successfully!</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {isError && (
+                  <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                    <div className="flex">
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">{message}</p>
                       </div>
                     </div>
                   </div>

@@ -20,23 +20,40 @@ function Header() {
     navigate('/');
   };
 
+  const isAdmin = user && user.user && user.user.role === 'admin';
+  const isLibrarian = user && user.user && user.user.role === 'librarian';
+  const isStaff = isAdmin || isLibrarian;
+
   const navigation = [
-    { name: 'Home', href: '/', current: true },
+    { name: 'Home', href: '/', current: false },
     { name: 'Books', href: '/books', current: false },
   ];
 
-  // Add borrows link if user is authenticated
-  if (user) {
+  // Add borrows link if user is authenticated and not admin/librarian
+  if (user && !isStaff) {
     navigation.push({ name: 'My Borrows', href: '/borrows', current: false });
   }
 
   // Add admin links if user is admin or librarian
-  if (user && (user.user.role === 'admin' || user.user.role === 'librarian')) {
+  if (isStaff) {
     navigation.push(
+      { name: 'Admin Panel', href: '/admin', current: false },
       { name: 'Add Book', href: '/books/new', current: false },
       { name: 'Manage Borrows', href: '/admin/borrows', current: false }
     );
   }
+
+  // Function to get role badge color
+  const getRoleBadgeClass = (role) => {
+    switch(role) {
+      case 'admin':
+        return 'bg-purple-100 text-purple-800';
+      case 'librarian':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-green-100 text-green-800';
+    }
+  };
 
   return (
     <Disclosure as="nav" className="bg-primary-800">
@@ -85,10 +102,15 @@ function Header() {
                 {user ? (
                   <Menu as="div" className="relative ml-3">
                     <div>
-                      <Menu.Button className="flex rounded-full bg-primary-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-800">
+                      <Menu.Button className="flex items-center rounded-full bg-primary-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-800">
                         <span className="sr-only">Open user menu</span>
-                        <div className="text-white px-3 py-2">
-                          {user.user.name}
+                        <div className="text-white px-3 py-2 flex items-center">
+                          <span className="mr-2">{user.user.name}</span>
+                          {user.user.role && (
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeClass(user.user.role)}`}>
+                              {user.user.role.charAt(0).toUpperCase() + user.user.role.slice(1)}
+                            </span>
+                          )}
                         </div>
                       </Menu.Button>
                     </div>
@@ -115,6 +137,36 @@ function Header() {
                             </Link>
                           )}
                         </Menu.Item>
+                        {!isStaff && (
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                to="/borrows"
+                                className={classNames(
+                                  active ? 'bg-gray-100' : '',
+                                  'block px-4 py-2 text-sm text-gray-700'
+                                )}
+                              >
+                                My Borrowed Books
+                              </Link>
+                            )}
+                          </Menu.Item>
+                        )}
+                        {isStaff && (
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                to="/admin"
+                                className={classNames(
+                                  active ? 'bg-gray-100' : '',
+                                  'block px-4 py-2 text-sm text-gray-700'
+                                )}
+                              >
+                                Admin Dashboard
+                              </Link>
+                            )}
+                          </Menu.Item>
+                        )}
                         <Menu.Item>
                           {({ active }) => (
                             <button

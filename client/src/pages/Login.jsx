@@ -16,14 +16,26 @@ function Login() {
   );
 
   const [showPassword, setShowPassword] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     if (isError) {
       console.error(message);
     }
 
-    if (isSuccess || user) {
-      navigate('/');
+    if (isSuccess && user) {
+      setUserRole(user.user.role);
+      
+      // Redirect after showing role information for a moment
+      const redirectTimer = setTimeout(() => {
+        if (user.user.role === 'admin' || user.user.role === 'librarian') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      }, 1500);
+      
+      return () => clearTimeout(redirectTimer);
     }
 
     dispatch(reset());
@@ -59,6 +71,32 @@ function Login() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {userRole && isSuccess && (
+            <div className={`mb-4 p-4 rounded-md ${
+              userRole === 'admin' 
+                ? 'bg-purple-50 text-purple-800' 
+                : userRole === 'librarian'
+                ? 'bg-blue-50 text-blue-800'
+                : 'bg-green-50 text-green-800'
+            }`}>
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium">
+                    Logged in successfully as {userRole === 'admin' ? 'Administrator' : userRole === 'librarian' ? 'Librarian' : 'User'}
+                  </p>
+                  <p className="text-sm mt-1">
+                    Redirecting you to {userRole === 'admin' || userRole === 'librarian' ? 'admin dashboard' : 'homepage'}...
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
