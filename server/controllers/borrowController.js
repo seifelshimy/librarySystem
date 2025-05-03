@@ -121,7 +121,7 @@ exports.createBorrow = async (req, res) => {
 
 // @desc    Update borrow (return book)
 // @route   PUT /api/borrows/:id
-// @access  Private (Admin or Librarian)
+// @access  Private
 exports.returnBook = async (req, res) => {
   try {
     let borrow = await Borrow.findById(req.params.id);
@@ -130,6 +130,18 @@ exports.returnBook = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: `Borrow not found with id of ${req.params.id}`
+      });
+    }
+
+    // Make sure user is borrow owner or admin/librarian
+    if (
+      borrow.user.toString() !== req.user.id &&
+      req.user.role !== 'admin' &&
+      req.user.role !== 'librarian'
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: `User ${req.user.id} is not authorized to return this book`
       });
     }
 

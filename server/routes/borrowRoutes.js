@@ -17,9 +17,9 @@ router.use(protect);
 router.post('/', createBorrow);
 router.get('/', getBorrows);
 router.get('/:id', getBorrow);
+router.put('/:id', returnBook);
 
-// Admin/librarian routes
-router.put('/:id', authorize('admin', 'librarian'), returnBook);
+// Admin routes
 router.delete('/:id', authorize('admin'), deleteBorrow);
 
 module.exports = router; 
